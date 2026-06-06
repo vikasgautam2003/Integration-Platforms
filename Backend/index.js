@@ -6,7 +6,7 @@ app.get('/', (req, res) => {
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok' });
 });
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 const HEALTH_ENDPOINT = process.env.HEALTH || '/api/health';
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
