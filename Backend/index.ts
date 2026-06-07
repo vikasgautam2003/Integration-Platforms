@@ -1,5 +1,8 @@
 import express from "express";
 import type { Request, Response } from 'express';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 
@@ -8,7 +11,8 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 app.get('/api/health', (req: Request, res: Response) => {
-    res.json({ status: 'ok' });
+    console.log('Health check endpoint hit: ' + process.env.HEALTH);
+    res.json({ status: 'ok', endpoint: process.env.HEALTH || '/api/health' });
 });
 
 const PORT = process.env.PORT || 4000;
