@@ -1,10 +1,55 @@
 import express from "express";
 import type { Request, Response } from 'express';
 import dotenv from 'dotenv';
+import { z } from 'zod';
 
 dotenv.config();
 
+
+const seenIds = new Set<string>();
+
 const app = express();
+
+app.use(express.json());
+
+
+const IntakeSchema = z.object({
+    id: z.string().uuid(),  
+    source: z.enum(['web', 'email', 'slack']),
+    content: z.string().min(1),
+    email: z.string().email().optional(),
+});
+
+type IntakeMessage = z.infer<typeof IntakeSchema>;
+
+const messages: IntakeMessage[] = [];
+
+app.post('/api/intake', (req: Request, res: Response) => {
+    const result = IntakeSchema.safeParse(req.body);
+
+    if(!result.success){
+        res.status(400).json({
+            error: 'Invalid input',
+            details: result.error.flatten().fieldErrors
+        });
+        return;
+    }
+
+    const message: IntakeMessage = result.data;
+
+    if (seenIds.has(message.id)) {
+        res.status(200).json({ accepted: true, duplicate: true });
+        return;
+    }
+
+    seenIds.add(message.id);
+    messages.push(message);
+
+    console.log('Received message:', message);
+    res.status(202).json({ accepted: true, message });
+
+})
+
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello, World!');
