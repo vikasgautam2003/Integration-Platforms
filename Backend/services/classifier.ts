@@ -1,9 +1,6 @@
+import Groq from 'groq-sdk';
 import { ClassificationSchema, ClassificationFallback } from '../schemas/classification.js';
 import type { Classification } from '../schemas/classification.js';
-
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
-
 
 const SYSTEM_PROMPT = `
 You are a message classifier. Given a message, return ONLY valid JSON matching this exact shape:
@@ -22,37 +19,37 @@ Rules:
 - No explanation, no markdown, no backticks — raw JSON only.
 `;
 
-
 export async function classify(content: string): Promise<Classification> {
-    try{
-       const response = await fetch(GEMINI_URL, { 
-        method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: `${SYSTEM_PROMPT}\n\nMessage: ${content}`
-                    }]
-                }]
-            }),
-         });
+    const apiKey = process.env.GROQ_API_KEY;
 
-         if (!response.ok) {
-    const errorBody = await response.json();
-    console.error(`[classifier] Gemini API error: ${response.status}`, JSON.stringify(errorBody, null, 2));
-    return ClassificationFallback;
-}
+    if (!apiKey) {
+        console.error('[classifier] GROQ_API_KEY not set');
+        return ClassificationFallback;
+    }
 
-        const raw = await response.json();
+    try {
+        const client = new Groq({ apiKey });
 
-        const text = raw?.candidates?.[0]?.content?.parts?.[0]?.text;
+        const completion = await client.chat.completions.create({
+            model: 'llama-3.3-70b-versatile',
+            messages: [
+                { role: 'system', content: SYSTEM_PROMPT },
+                { role: 'user', content: `Message: ${content}` },
+            ],
+            temperature: 0.1,
+        });
+
+        const text = completion.choices[0]?.message?.content;
 
         if (!text) {
-            console.error('[classifier] Empty response from Gemini');
+            console.error('[classifier] Empty response from Groq');
             return ClassificationFallback;
         }
 
-        const cleaned = text.replace(/```json|```/g, '').trim();
+        // const cleaned = text.replace(/```json|```/g, '').trim();
+        // Force bad JSON to test fallback
+const cleaned = '{ this is not json at all }';
+
         let parsed: unknown;
         try {
             parsed = JSON.parse(cleaned);
@@ -73,6 +70,4 @@ export async function classify(content: string): Promise<Classification> {
         console.error('[classifier] Unexpected error:', err);
         return ClassificationFallback;
     }
-
-
 }
