@@ -116,6 +116,25 @@ A deliberate **two-service split**, not a monolith:
 
 ---
 
+## 🧩 Optional spokes (post-core, build vs. buy)
+
+Once the core routes work, breadth is added one spoke at a time — each a slightly different auth model. A deliberate **build-vs-buy** line runs through this tier:
+
+| Spoke | Auth model | Why it's here |
+|---|---|---|
+| **Salesforce** (Developer Edition) | OAuth 2.0 (web server flow) | The enterprise CRM every FDE meets; proves you can handle heavy enterprise auth, not just API keys |
+| **Zapier / Make** | No-code connectors | The escape hatch — wire low-value, long-tail routes (e.g. "log to a Google Sheet") *without* writing/maintaining code |
+| **Discord** | Webhook URL | Near-zero-config extra alert channel |
+| **Telegram** | Bot token | Push the most urgent signals to a phone |
+| **Notion** | Integration token | Log signals to a readable database |
+| **GitHub** | Personal access token | Open issues for the engineering route |
+| **Google Sheets** | Google OAuth | The "dump it in a spreadsheet" export |
+| **Twilio** | Account SID + token (trial) | SMS for the most urgent signals |
+
+> **The judgment that matters:** hand-code the integrations that are core, high-volume, or need custom logic. Reach for no-code (Zapier) only where writing and maintaining code isn't worth it. Knowing *when not to code* is a senior skill.
+
+---
+
 ## 🔐 Engineering principles
 
 - **Validate at every boundary** — never trust an incoming request *or* an LLM's output.
