@@ -74,14 +74,37 @@
 
 
 
-
+import "dotenv/config";
 import express from 'express';
-import * as dotenv from 'dotenv';
+//import * as dotenv from 'dotenv';
 import { intakeRouter } from './routes/intake.js';
+import { supabase } from "./services/supabase.js";
 
-dotenv.config();
+//dotenv.config();
 
 const app = express();
+
+// async function testSupabase() {
+//   const { data, error } = await supabase
+//     .from("signals")
+//     .insert([
+//       {
+//         id: crypto.randomUUID(),
+//         source: "web",
+//         content: "Supabase connection test",
+//         type: "bug",
+//         urgency: "low",
+//         summary: "Testing database insertion",
+//         suggested_reply: "Test reply",
+//         status: "classified",
+//       },
+//     ])
+//     .select();
+
+//   console.log("DATA:", data);
+//   console.log("ERROR:", error);
+// }
+// testSupabase();
 app.use(express.json());
 
 app.get('/api/health', (req, res) => {
