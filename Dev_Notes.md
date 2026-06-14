@@ -1,4 +1,4 @@
-Yash, i have some some changes to the code, regarding optimizations, of token usage and all, will explain to you in next meeting
+Yash, i have made some changes to the code, regarding optimizations, of token usage and all, will explain to you in next meeting
 
 
 For now, you need to learn hubspot:- 
